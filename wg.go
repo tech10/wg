@@ -21,6 +21,8 @@ type WaitGroup struct {
 }
 
 // Go runs a function in a new goroutine using the usual Add, defer Done pattern.
+// f must not panic.
+// If you think f will panic, place a defer function within f, containing recover() and handle panics as you like.
 func (wg *WaitGroup) Go(f func()) {
 	wg.goRunner(f, false)
 }

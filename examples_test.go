@@ -22,6 +22,30 @@ func ExampleWaitGroup_Go() {
 	// Hello from goroutine!
 }
 
+// ExampleWaitGroup_Go_withRecover demonstrates using the Go method to run a goroutine
+// with automatic Add/Done handling, and manually recovering from panics.
+// You must defer recover() from within f, as f is running in its own goroutine.
+// If you do not, the panic caused by f will not be caught.
+func ExampleWaitGroup_Go_withRecover() {
+	var wg wg.WaitGroup
+
+	wg.Go(func() {
+		defer func() {
+			if r := recover(); r != nil {
+				// Do something with r here.
+				fmt.Println("Panic from goroutine!")
+			}
+		}()
+		panic("testing")
+	})
+
+	// Wait for goroutines to finish
+	wg.Wait()
+
+	// Output:
+	// Panic from goroutine!
+}
+
 // ExampleWaitGroup_GoRecover demonstrates using the GoRecover method
 // which runs a goroutine and recovers from any panic, printing to stderr by default.
 func ExampleWaitGroup_GoRecover() {

@@ -20,27 +20,6 @@ func TestGo(t *testing.T) {
 	t.Log("No deadlock.")
 }
 
-func TestGoRecover(t *testing.T) {
-	var wgGroup wg.WaitGroup
-	wgGroup.PanicHandler = func(r interface{}) {
-		if r != nil {
-			t.Log("Panic caught successfully.")
-		} else {
-			t.Errorf("Expected panic to be caught, received nil value.")
-		}
-	}
-	counter := 0
-	wgGroup.GoRecover(func() {
-		counter++
-		panic("catch this panic")
-	})
-	wgGroup.Wait()
-	if counter != 1 {
-		t.Errorf("expected counter = 1, got %d", counter)
-	}
-	t.Log("No deadlock.")
-}
-
 func TestRunRecover_NoPanic(t *testing.T) {
 	var wgGroup wg.WaitGroup
 	err := wgGroup.RunRecover(func() {
@@ -63,5 +42,26 @@ func TestRunRecover_WithPanic(t *testing.T) {
 		t.Errorf("expected wrapped error, got %v", err)
 	}
 	wgGroup.Wait()
+	t.Log("No deadlock.")
+}
+
+func TestGoRecover_withCustomPanicHandler(t *testing.T) {
+	var wgGroup wg.WaitGroup
+	wgGroup.PanicHandler = func(r interface{}) {
+		if r != nil {
+			t.Log("Panic caught successfully.")
+		} else {
+			t.Errorf("Expected panic to be caught, received nil value.")
+		}
+	}
+	counter := 0
+	wgGroup.GoRecover(func() {
+		counter++
+		panic("catch this panic")
+	})
+	wgGroup.Wait()
+	if counter != 1 {
+		t.Errorf("expected counter = 1, got %d", counter)
+	}
 	t.Log("No deadlock.")
 }
