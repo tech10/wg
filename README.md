@@ -10,7 +10,7 @@ sync.WaitGroup is convenient for waiting on concurrent operations, but this will
 
 # Examples
 
-Take a look at `wg_test.go` and `examples_test.go` for examples on how to use this package correctly. The tests should pass race testing, and they provide a minimal, but example worthy test framework to test this wrapper.
+Take a look at wg_test.go and examples_test.go for examples on how to use this package correctly. The tests should pass race testing, and they provide a minimal, but example worthy test framework to test this wrapper.
 
 # Contributions
 
