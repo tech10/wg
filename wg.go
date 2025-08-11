@@ -11,6 +11,7 @@ import (
 
 // PanicHandler allows you to define what will happen with panics when GoRecover is used.
 // Otherwise, it will fall back to printing to os.Stderr.
+// If PanicHandler panics, it will fall back to printing to os.Stderr.
 type PanicHandler func(interface{})
 
 // WaitGroup wraps sync.WaitGroup, allowing the use of Add, Wait, and Done as usual.
@@ -29,6 +30,7 @@ func (wg *WaitGroup) Go(f func()) {
 
 // GoRecover will run f in a new goroutine just like Go, but it will recover from any panics.
 // Any panics caught by this function are printed to stderr, or will use the custom PanicHandler function you define in PanicHandler.
+// If PanicHandler panics, it will fall back to printing to os.Stderr.
 func (wg *WaitGroup) GoRecover(f func()) {
 	wg.goRunner(f, true)
 }
