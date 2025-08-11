@@ -53,16 +53,28 @@ func (wg *WaitGroup) goRunner(f func(), handlePanics bool) {
 		if handlePanics {
 			defer func() {
 				if r := recover(); r != nil {
-					if wg.PanicHandler == nil {
-						fmt.Fprintf(os.Stderr, "Panic recovered in goroutine: %v\n%s\n", r, debug.Stack())
-					} else {
-						wg.PanicHandler(r)
-					}
+					wg.panicHandlerWrapper(r, debug.Stack())
 				}
 			}()
 		}
 		f()
 	}()
+}
+
+// panicHandlerWrapper wraps the execution of PanicHandler.
+// If PanicHandler panics, it will fall back to printing to os.Stderr.
+// If PanicHandler does not exist, it will fall back to printing to os.Stderr.
+func (wg *WaitGroup) panicHandlerWrapper(r interface{}, t []byte) {
+	defer func() {
+		if rec := recover(); rec != nil {
+			fmt.Fprintf(os.Stderr, "Panic caught in PanicHandler:\n%v\n%s\n", r, debug.Stack())
+		}
+	}()
+	if wg.PanicHandler == nil {
+		fmt.Fprintf(os.Stderr, "Panic recovered in goroutine: %v\n%s\n", r, t)
+		return
+	}
+	wg.PanicHandler(r)
 }
 
 // errFormat formats an error based upon the return value of recover.
