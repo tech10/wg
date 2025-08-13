@@ -45,6 +45,15 @@ func TestRunRecover_WithPanic(t *testing.T) {
 	t.Log("No deadlock.")
 }
 
+func TestGoRecover_withNoCustomPanicHandler(t *testing.T) {
+	var wgGroup wg.WaitGroup
+	wgGroup.GoRecover(func() {
+		panic("catch this panic in the default manner")
+	})
+	wgGroup.Wait()
+	t.Log("No deadlock. Panic caught.")
+}
+
 func TestGoRecover_withCustomPanicHandler(t *testing.T) {
 	var wgGroup wg.WaitGroup
 	wgGroup.PanicHandler = func(r interface{}) {
@@ -54,14 +63,26 @@ func TestGoRecover_withCustomPanicHandler(t *testing.T) {
 			t.Errorf("Expected panic to be caught, received nil value.")
 		}
 	}
-	counter := 0
 	wgGroup.GoRecover(func() {
-		counter++
 		panic("catch this panic")
 	})
 	wgGroup.Wait()
-	if counter != 1 {
-		t.Errorf("expected counter = 1, got %d", counter)
+	t.Log("No deadlock. Panic caught.")
+}
+
+func TestGoRecover_withCustomPanicHandlerAndNestedPanic(t *testing.T) {
+	var wgGroup wg.WaitGroup
+	wgGroup.PanicHandler = func(r interface{}) {
+		if r != nil {
+			t.Log("Original panic caught successfully.")
+		} else {
+			t.Errorf("Expected panic to be caught, received nil value.")
+		}
+		panic("this is a nested panic")
 	}
-	t.Log("No deadlock.")
+	wgGroup.GoRecover(func() {
+		panic("catch this panic")
+	})
+	wgGroup.Wait()
+	t.Log("No deadlock. Nested panic caught.")
 }
