@@ -64,16 +64,16 @@ func (wg *WaitGroup) goRunner(f func(), handlePanics bool) {
 }
 
 // panicHandlerWrapper wraps the execution of PanicHandler.
-// If PanicHandler panics, it will fall back to printing to os.Stderr.
+// If PanicHandler panics, it will fall back to printing to os.Stderr, and will print both panic values and a new stack trace.
 // If PanicHandler does not exist, it will fall back to printing to os.Stderr.
 func (wg *WaitGroup) panicHandlerWrapper(r interface{}, t []byte) {
 	defer func() {
 		if rec := recover(); rec != nil {
-			fmt.Fprintf(os.Stderr, "Panic caught in PanicHandler:\n%v\n%s\n", r, debug.Stack())
+			fmt.Fprintf(os.Stderr, "Panic caught in PanicHandler:\n%v\nOriginal panic:\n%v\nStack trace:\n%s\n", rec, r, debug.Stack())
 		}
 	}()
 	if wg.PanicHandler == nil {
-		fmt.Fprintf(os.Stderr, "Panic recovered in goroutine: %v\n%s\n", r, t)
+		fmt.Fprintf(os.Stderr, "Panic recovered in goroutine:\n%v\nStack trace:\n%s\n", r, t)
 		return
 	}
 	wg.PanicHandler(r)
