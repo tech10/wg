@@ -10,12 +10,12 @@ import (
 )
 
 // PanicHandler allows you to define what will happen with panics when GoRecover is used.
-// Otherwise, it will fall back to printing to os.Stderr.
-// If PanicHandler panics, it will fall back to printing to os.Stderr.
+// Otherwise, it will print to stderr.
+// If PanicHandler panics, it will print to stderr.
 type PanicHandler func(interface{})
 
 // WaitGroup wraps sync.WaitGroup, allowing the use of Add, Wait, and Done as usual.
-// It adds a couple other features for convenience.
+// It adds some other features for convenience.
 type WaitGroup struct {
 	sync.WaitGroup
 	PanicHandler PanicHandler
@@ -23,14 +23,14 @@ type WaitGroup struct {
 
 // Go runs a function in a new goroutine using the usual Add, defer Done pattern.
 // f must not panic.
-// If you think f will panic, place a defer function within f, containing recover() and handle panics as you like.
+// If f might panic, place a defer function within f, containing recover() and handle panics as you like.
 func (wg *WaitGroup) Go(f func()) {
 	wg.goRunner(f, false)
 }
 
 // GoRecover will run f in a new goroutine just like Go, but it will recover from any panics.
 // Any panics caught by this function are printed to stderr, or will use the custom PanicHandler function you define in PanicHandler.
-// If PanicHandler panics, it will fall back to printing to os.Stderr.
+// If PanicHandler panics, it will print to stderr.
 func (wg *WaitGroup) GoRecover(f func()) {
 	wg.goRunner(f, true)
 }
@@ -47,7 +47,7 @@ func (wg *WaitGroup) RunRecover(f func()) (err error) {
 }
 
 // goRunner runs f in a new goroutine, and optionally captures panics with recover.
-// The captured panics are printed to os.Stderr or handled by PanicHandler if set.
+// The captured panics are printed to stderr or handled by PanicHandler if set.
 func (wg *WaitGroup) goRunner(f func(), handlePanics bool) {
 	wg.Add(1)
 	go func() {
@@ -64,8 +64,8 @@ func (wg *WaitGroup) goRunner(f func(), handlePanics bool) {
 }
 
 // panicHandlerWrapper wraps the execution of PanicHandler.
-// If PanicHandler panics, it will fall back to printing to os.Stderr, and will print both panic values and a new stack trace.
-// If PanicHandler does not exist, it will fall back to printing to os.Stderr.
+// If PanicHandler panics, it will fall back to printing to stderr, and will print both panic values and a new stack trace.
+// If PanicHandler does not exist, it will fall back to printing to stderr.
 func (wg *WaitGroup) panicHandlerWrapper(r interface{}, t []byte) {
 	defer func() {
 		if rec := recover(); rec != nil {
